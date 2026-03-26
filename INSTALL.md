@@ -33,28 +33,34 @@ Edit `.claude/settings.json` in your project. Add the hook entries with **absolu
     "PreToolUse": [
       {
         "matcher": "Edit|Write|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python /absolute/path/to/your-project/.claude/hooks/universal-gate-enforcer.py"
-          }
-        ]
+        "hooks": [{"type": "command", "command": "python /abs/path/.claude/hooks/universal-gate-enforcer.py"}]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{"type": "command", "command": "python /abs/path/.claude/hooks/auto-approve-claude-writes.py"}]
       }
     ],
     "PostToolUse": [
       {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [{"type": "command", "command": "python /abs/path/.claude/hooks/actions-log-appender.py"}]
+      },
+      {
         "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python /absolute/path/to/your-project/.claude/hooks/test-failure-detector.py"
-          }
-        ]
+        "hooks": [{"type": "command", "command": "python /abs/path/.claude/hooks/test-failure-detector.py"}]
       }
     ]
   }
 }
 ```
+
+Four hooks are required:
+- `universal-gate-enforcer.py` — blocks writes when session/anchor/learn gates aren't met
+- `auto-approve-claude-writes.py` — required for Claude Code 2.1+; auto-approves kernel's own `.claude/` writes
+- `actions-log-appender.py` — logs every action for anchor review
+- `test-failure-detector.py` — detects failures and sets the learn gate
 
 > **Why absolute paths?** Claude Code runs hooks from its own working directory, which may differ from your project root if a Bash command uses `cd`. Absolute paths guarantee the hooks are always found.
 

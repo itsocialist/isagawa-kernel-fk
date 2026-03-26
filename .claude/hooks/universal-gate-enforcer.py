@@ -22,7 +22,7 @@ import json
 import sys
 from pathlib import Path
 
-STATE_DIR = Path('.claude/state')
+STATE_DIR = Path(__file__).resolve().parent.parent / 'state'
 SESSION_STATE = STATE_DIR / 'session_state.json'
 
 # Bash commands that are always allowed (read-only / safe)

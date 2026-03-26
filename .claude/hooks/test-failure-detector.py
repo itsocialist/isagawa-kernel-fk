@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-STATE_DIR = Path('.claude/state')
+STATE_DIR = Path(__file__).resolve().parent.parent / 'state'
 SESSION_STATE = STATE_DIR / 'session_state.json'
 DEBUG_LOG = STATE_DIR / 'hook_debug.log'
 

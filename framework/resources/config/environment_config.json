@@ -13,5 +13,29 @@
   },
   "sovai": {
     "url": "http://localhost:8180"
+  },
+  "ciq_jeopardy": {
+    "url": "http://localhost:5173",
+    "explicit_wait": 15,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/ciq_jeopardy"
+  },
+  "ciq_jeopardy_prod": {
+    "url": "http://45.63.65.128",
+    "explicit_wait": 20,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/ciq_jeopardy_prod"
+  },
+  "cogs_calculator_dev": {
+    "url": "http://localhost:5200",
+    "explicit_wait": 15,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/cogs_calculator"
+  },
+  "cogs_calculator_prod": {
+    "url": "https://cogs-calculator.vercel.app",
+    "explicit_wait": 20,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/cogs_calculator"
   }
 }

@@ -10,6 +10,7 @@ from interfaces.browser_interface import BrowserInterface
 from resources.utilities import autologger
 from tasks.boothcall.navigation_tasks import NavigationTasks
 from tasks.boothcall.shift_management_tasks import ShiftManagementTasks
+from tasks.boothcall.team_management_tasks import TeamManagementTasks
 
 
 class EventOrganizer:
@@ -36,6 +37,7 @@ class EventOrganizer:
         self.base_url = base_url
         self.navigation_tasks = NavigationTasks(browser_interface)
         self.shift_management_tasks = ShiftManagementTasks(browser_interface)
+        self.team_management_tasks = TeamManagementTasks(browser_interface)
 
     # ==================== WORKFLOW METHODS ====================
 
@@ -98,3 +100,48 @@ class EventOrganizer:
         """
         self.shift_management_tasks.navigate_to_shifts_tab()
         self.shift_management_tasks.delete_first_shift()
+
+    # ==================== TEAM MANAGEMENT WORKFLOWS ====================
+
+    @autologger.automation_logger("Role")
+    def manual_add_team_member(self, email: str, name: str = "") -> None:
+        """
+        Complete workflow: Navigate to Team tab, open invite dialog, manual add a member.
+
+        Orchestrates MULTIPLE task operations:
+        1. Navigate to Team tab
+        2. Open invite dialog
+        3. Switch to Manual Add and submit
+
+        Args:
+            email: Member email address
+            name: Member display name
+        """
+        self.team_management_tasks.navigate_to_team_tab()
+        self.team_management_tasks.open_invite_dialog()
+        self.team_management_tasks.manual_add_member(email, name)
+
+    @autologger.automation_logger("Role")
+    def manual_add_team_member_continue(self, email: str, name: str = "") -> None:
+        """
+        Continue workflow (already on Team tab): Open dialog and manual add.
+
+        Args:
+            email: Member email address
+            name: Member display name
+        """
+        self.team_management_tasks.open_invite_dialog()
+        self.team_management_tasks.manual_add_member(email, name)
+
+    @autologger.automation_logger("Role")
+    def send_email_invite_to_member(self, email: str, name: str = "") -> None:
+        """
+        Complete workflow: Navigate to Team tab, open invite dialog, send email invite.
+
+        Args:
+            email: Member email address
+            name: Member display name
+        """
+        self.team_management_tasks.navigate_to_team_tab()
+        self.team_management_tasks.open_invite_dialog()
+        self.team_management_tasks.send_email_invite(email, name)

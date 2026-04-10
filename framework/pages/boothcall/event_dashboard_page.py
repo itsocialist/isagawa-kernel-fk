@@ -32,11 +32,11 @@ class EventDashboardPage:
     CREATE_EVENT_BUTTON = (By.XPATH, "//a[contains(., 'New Event')]")
     EVENT_CARD = (By.CSS_SELECTOR, "[class*='rounded-2xl'][class*='border']")
 
-    # Event detail page — tabs
-    COVERAGE_TAB = (By.XPATH, "//a[contains(., 'Coverage')]")
-    SHIFTS_TAB = (By.XPATH, "//a[contains(., 'Shifts')]")
-    TEAM_TAB = (By.XPATH, "//a[contains(., 'Team')]")
-    RECONCILE_TAB = (By.XPATH, "//a[contains(., 'Reconcile')]")
+    # Event detail page — tabs (Next.js Link components with Lucide icons)
+    COVERAGE_TAB = (By.XPATH, "//nav[@aria-label='Event sections']//a[contains(., 'Coverage')]")
+    SHIFTS_TAB = (By.XPATH, "//nav[@aria-label='Event sections']//a[contains(., 'Shifts')]")
+    TEAM_TAB = (By.XPATH, "//nav[@aria-label='Event sections']//a[contains(., 'Team')]")
+    RECONCILE_TAB = (By.XPATH, "//nav[@aria-label='Event sections']//a[contains(., 'Reconcile')]")
 
     # Event detail page — header
     EVENT_TITLE = (By.CSS_SELECTOR, "h1")
@@ -58,6 +58,11 @@ class EventDashboardPage:
     def click_first_event_card(self) -> "EventDashboardPage":
         """Click the first event card to open event detail."""
         self.browser.click(*self.EVENT_CARD)
+        return self
+
+    def wait_for_event_detail_loaded(self, timeout: int = 15) -> "EventDashboardPage":
+        """Wait for event detail page to finish loading (tabs visible)."""
+        self.browser.wait_for_element_visible(*self.COVERAGE_TAB, timeout=timeout)
         return self
 
     def click_coverage_tab(self) -> "EventDashboardPage":

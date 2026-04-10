@@ -33,6 +33,16 @@ class TestBoothCallSmoke:
         self.landing_page = LandingPage(self.browser)
         self.login_page = LoginPage(self.browser)
 
+    # ==================== HELPERS ====================
+
+    def _skip_if_authenticated(self):
+        """Skip when authenticated — landing/login redirect to /events."""
+        self.browser.navigate_to(self.config["url"])
+        import time
+        time.sleep(1)
+        if "/events" in self.browser.get_current_url():
+            pytest.skip("Authenticated session active — public pages redirect")
+
     # ==================== TEST METHODS ====================
 
     @pytest.mark.boothcall
@@ -47,6 +57,8 @@ class TestBoothCallSmoke:
         2. Act - Visit the landing page
         3. Assert - Verify hero section and logo are displayed
         """
+        self._skip_if_authenticated()
+
         # Arrange
         base_url = self.config["url"]
         organizer = EventOrganizer(self.browser, base_url)
@@ -73,6 +85,8 @@ class TestBoothCallSmoke:
         2. Act - Visit landing page, then navigate to login
         3. Assert - Verify login page is displayed with Google OAuth button
         """
+        self._skip_if_authenticated()
+
         # Arrange
         base_url = self.config["url"]
         organizer = EventOrganizer(self.browser, base_url)

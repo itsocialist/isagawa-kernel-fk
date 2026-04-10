@@ -37,5 +37,29 @@
     "explicit_wait": 20,
     "screenshots_on_failure": true,
     "screenshot_dir": "screenshots/cogs_calculator"
+  },
+  "claude_skills_builder": {
+    "url": "http://localhost:7243",
+    "explicit_wait": 10,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/claude_skills_builder"
+  },
+  "meetsync": {
+    "url": "http://localhost:3001",
+    "explicit_wait": 15,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/meetsync"
+  },
+  "revop_intelligence": {
+    "url": "http://localhost:8080",
+    "explicit_wait": 15,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/revop_intelligence"
+  },
+  "boothcall": {
+    "url": "http://localhost:3133",
+    "explicit_wait": 15,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/boothcall"
   }
 }

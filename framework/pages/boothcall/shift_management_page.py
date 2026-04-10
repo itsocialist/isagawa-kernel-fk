@@ -103,6 +103,11 @@ class ShiftManagementPage:
         self.browser.click(*self.ROLE_OPTION_GREETER)
         return self
 
+    def select_role_scanner(self) -> "ShiftManagementPage":
+        """Select Scanner from the role dropdown."""
+        self.browser.click(*self.ROLE_OPTION_SCANNER)
+        return self
+
     def click_start_date_picker(self) -> "ShiftManagementPage":
         """Open the start date calendar popover."""
         self.browser.click(*self.START_DATE_BUTTON)

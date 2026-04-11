@@ -61,5 +61,11 @@
     "explicit_wait": 15,
     "screenshots_on_failure": true,
     "screenshot_dir": "screenshots/boothcall"
+  },
+  "digitm_gtm": {
+    "url": "http://localhost:3000",
+    "explicit_wait": 15,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/digitm_gtm"
   }
 }

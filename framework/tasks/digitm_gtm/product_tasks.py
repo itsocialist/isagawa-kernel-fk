@@ -23,14 +23,9 @@ class ProductTasks:
         self.browser.navigate_to(base_url + "/products/new")
         self.browser.wait_for_element_visible(By.CSS_SELECTOR, "form", timeout=15)
 
-        self.browser.type(By.CSS_SELECTOR, "input[placeholder*='Awesome']", name)
-        self.browser.type(By.CSS_SELECTOR, "textarea", description)
-
-        # Audience field — third input
-        inputs = self.browser.find_elements(By.CSS_SELECTOR, "input[type='text']")
-        if len(inputs) >= 2:
-            inputs[1].clear()
-            inputs[1].send_keys(audience)
+        self.browser.type(By.CSS_SELECTOR, "#product-name", name)
+        self.browser.type(By.CSS_SELECTOR, "#product-description", description)
+        self.browser.type(By.CSS_SELECTOR, "#product-audience", audience)
 
         self.browser.click(By.XPATH, "//button[contains(., 'Create Product')]")
 

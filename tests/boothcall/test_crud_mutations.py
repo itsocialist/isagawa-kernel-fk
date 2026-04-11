@@ -100,7 +100,9 @@ class TestBoothCallCRUD:
         self.browser.execute_script("""
             const dialog = document.querySelector('[role="dialog"]');
             const btns = dialog.querySelectorAll('button[type="button"]:not([role="combobox"])');
-            if (btns[0]) btns[0].click();
+            for (const b of btns) {
+                if (b.textContent.includes('Pick shift start')) { b.click(); return; }
+            }
         """)
         time.sleep(0.8)
 
@@ -119,13 +121,13 @@ class TestBoothCallCRUD:
         # Start time auto-fills to 09:00 after date selection - leave it as default
         time.sleep(0.3)
 
-        # --- END DATE ---
-        # Click end date button (second DateTimePicker button, exclude combobox)
+        # Click end date button — find by text content
         self.browser.execute_script("""
             const dialog = document.querySelector('[role="dialog"]');
             const btns = dialog.querySelectorAll('button[type="button"]:not([role="combobox"])');
-            // After start is set: btns[0] = selected start, btns[1] = "Pick shift end"
-            if (btns.length >= 2) btns[1].click();
+            for (const b of btns) {
+                if (b.textContent.includes('Pick shift end')) { b.click(); return; }
+            }
         """)
         time.sleep(0.8)
 
@@ -140,16 +142,8 @@ class TestBoothCallCRUD:
         """)
         time.sleep(0.8)
 
-        # Set end time to 14:00 via native JS setter (send_keys doesn't trigger React onChange)
-        self.browser.execute_script("""
-            const timeInputs = document.querySelectorAll("input[type='time']");
-            if (timeInputs.length >= 2 && !timeInputs[1].disabled) {
-                const nativeSet = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-                nativeSet.call(timeInputs[1], '14:00');
-                timeInputs[1].dispatchEvent(new Event('input', { bubbles: true }));
-                timeInputs[1].dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        """)
+        # End time defaults to 09:00 after day selection (same as start).
+        # Since start=Apr22 09:00 and end=Apr23 09:00, validation passes (start < end).
         time.sleep(0.5)
 
         # Submit the form via JS (avoids any overlay intercept)

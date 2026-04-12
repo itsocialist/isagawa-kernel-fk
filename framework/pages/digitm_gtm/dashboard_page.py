@@ -16,7 +16,7 @@ class DashboardPage:
 
     # ==================== LOCATORS ====================
 
-    HEADING = (By.XPATH, "//h1[contains(., 'Dashboard')]")
+    HEADING = (By.XPATH, "//h1[contains(., 'Command Center')]")
     SIDEBAR_BRAND = (By.XPATH, "//aside//a[contains(., 'Digitm GTM')]")
     NAV_DASHBOARD = (By.XPATH, "//aside//a[contains(., 'Dashboard')]")
     NAV_PRODUCTS = (By.XPATH, "//aside//a[contains(., 'Products')]")

@@ -17,8 +17,8 @@ class PipelineViewPage:
     # ==================== LOCATORS ====================
 
     PIPELINE_HEADING = (By.XPATH, "//h1[contains(., 'Pipeline:')]")
-    STAGE_CARD = (By.CSS_SELECTOR, "div.rounded-lg.border.p-4")
-    GATE_SECTION = (By.XPATH, "//h2[contains(., 'Gates Pending Review')]")
+    STAGE_CARD = (By.CSS_SELECTOR, "div.glass.rounded-2xl")
+    GATE_SECTION = (By.XPATH, "//h2[contains(., 'Approval Required')]")
     APPROVE_BUTTON = (By.XPATH, "//button[contains(., 'Approve')]")
     REJECT_BUTTON = (By.XPATH, "//button[contains(., 'Reject')]")
     ARTIFACTS_TOGGLE = (By.XPATH, "//summary[contains(., 'View artifacts')]")

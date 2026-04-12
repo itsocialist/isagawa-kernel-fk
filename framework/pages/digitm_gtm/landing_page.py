@@ -16,10 +16,10 @@ class LandingPage:
 
     # ==================== LOCATORS ====================
 
-    HERO_HEADING = (By.XPATH, "//h1[contains(., 'Spec to Market')]")
-    HERO_SUBTEXT = (By.XPATH, "//p[contains(., 'AI-powered go-to-market pipeline')]")
-    GET_STARTED_BUTTON = (By.XPATH, "//a[contains(., 'Get Started')]")
-    SIGN_IN_BUTTON = (By.XPATH, "//a[contains(., 'Sign In')]")
+    HERO_HEADING = (By.XPATH, "//h1[contains(., 'One product spec')]")
+    HERO_SUBTEXT = (By.XPATH, "//p[contains(., 'Digitm GTM runs your go-to-market')]")
+    GET_STARTED_BUTTON = (By.XPATH, "//a[contains(., 'Launch Your First Product')]")
+    DASHBOARD_BUTTON = (By.XPATH, "//a[contains(., 'Dashboard')]")
     FEATURE_PIPELINE = (By.XPATH, "//h3[contains(., '7-Stage Pipeline')]")
     FEATURE_AI = (By.XPATH, "//h3[contains(., 'AI-Powered')]")
     FEATURE_FEEDBACK = (By.XPATH, "//h3[contains(., 'Weekly Feedback')]")
@@ -43,8 +43,8 @@ class LandingPage:
         self.browser.click(*self.GET_STARTED_BUTTON)
         return self
 
-    def click_sign_in(self) -> "LandingPage":
-        self.browser.click(*self.SIGN_IN_BUTTON)
+    def click_dashboard(self) -> "LandingPage":
+        self.browser.click(*self.DASHBOARD_BUTTON)
         return self
 
     # ==================== STATE-CHECK METHODS ====================

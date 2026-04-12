@@ -17,7 +17,7 @@ class ProductDetailPage:
     # ==================== LOCATORS ====================
 
     PRODUCT_NAME = (By.CSS_SELECTOR, "h1")
-    RUN_PIPELINE_BUTTON = (By.XPATH, "//button[contains(., 'Run Pipeline')]")
+    RUN_PIPELINE_BUTTON = (By.XPATH, "//button[contains(., 'Launch GTM')]")
     DELETE_BUTTON = (By.XPATH, "//button[contains(@class, 'destructive') or .//svg]")
     PIPELINE_RUNS_HEADING = (By.XPATH, "//h2[contains(., 'Pipeline Runs')]")
     NO_RUNS_MESSAGE = (By.XPATH, "//*[contains(., 'No pipeline runs yet')]")

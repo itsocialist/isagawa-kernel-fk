@@ -91,71 +91,83 @@ class TestDigitmGtmProductCreation:
     @pytest.mark.digitm_gtm
     @pytest.mark.e2e
     @autologger.automation_logger("Test")
-    def test_new_product_form_loads(self):
+    def test_new_product_wizard_loads(self):
         """
-        E2E: New product form renders with all required fields.
+        E2E: Product creation wizard renders with step 1.
 
         AAA:
         1. Arrange - Navigate to new product page
-        2. Act - Wait for form
-        3. Assert - Form fields visible
+        2. Act - Wait for wizard
+        3. Assert - Step 1 heading, input, and Continue button visible
         """
         # Arrange & Act
         base_url = self.config["url"]
         self.browser.navigate_to(base_url + "/products/new")
-        self.browser.wait_for_element_visible(By.CSS_SELECTOR, "form", timeout=15)
+        self.browser.wait_for_element_visible(By.XPATH, "//h2[contains(., 'product called')]", timeout=15)
 
         # Assert
-        assert self.browser.is_element_displayed(By.XPATH, "//h1[contains(., 'New Product')]"), \
-            "New Product heading should be visible"
-        assert self.browser.is_element_displayed(By.XPATH, "//label[contains(., 'Product Name')]"), \
-            "Product Name label should be visible"
-        assert self.browser.is_element_displayed(By.XPATH, "//label[contains(., 'Description')]"), \
-            "Description label should be visible"
-        assert self.browser.is_element_displayed(By.XPATH, "//label[contains(., 'Target Audience')]"), \
-            "Target Audience label should be visible"
-        assert self.browser.is_element_displayed(By.XPATH, "//button[contains(., 'Create Product')]"), \
-            "Create Product button should be visible"
+        assert self.browser.is_element_displayed(By.XPATH, "//h2[contains(., 'product called')]"), \
+            "Step 1 heading should be visible"
+        assert self.browser.is_element_displayed(By.TAG_NAME, "input"), \
+            "Product name input should be visible"
+        assert self.browser.is_element_displayed(By.XPATH, "//button[contains(., 'Continue')]"), \
+            "Continue button should be visible"
 
     @pytest.mark.digitm_gtm
     @pytest.mark.e2e
     @autologger.automation_logger("Test")
-    def test_create_product_and_view_detail(self):
+    def test_create_product_via_wizard(self):
         """
-        E2E: Create a product and verify it appears on detail page.
+        E2E: Create a product through the 5-step wizard.
 
         AAA:
-        1. Arrange - Navigate to new product form
-        2. Act - Fill form and submit
-        3. Assert - Redirected to product detail with correct data
+        1. Arrange - Navigate to wizard
+        2. Act - Complete all 5 steps
+        3. Assert - Redirected to product detail page
         """
         # Arrange
         base_url = self.config["url"]
-        product_name = f"E2E Test Product {int(time.time())}"
+        product_name = f"Wizard Product {int(time.time())}"
         self.browser.navigate_to(base_url + "/products/new")
-        self.browser.wait_for_element_visible(By.CSS_SELECTOR, "form", timeout=15)
+        self.browser.wait_for_element_visible(By.XPATH, "//h2[contains(., 'product called')]", timeout=15)
 
-        # Act - fill form using stable IDs
-        self.browser.type(By.CSS_SELECTOR, "#product-name", product_name)
+        # Step 1: Name
+        self.browser.type(By.TAG_NAME, "input", product_name)
+        self.browser.click(By.XPATH, "//button[contains(., 'Continue')]")
+        time.sleep(1)
+
+        # Step 2: Description
+        self.browser.wait_for_element_visible(By.TAG_NAME, "textarea", timeout=10)
         self.browser.type(
-            By.CSS_SELECTOR,
-            "#product-description",
-            "An automated test product created by the E2E test suite to validate pipeline functionality"
+            By.TAG_NAME, "textarea",
+            "An automated test product created by the wizard E2E test"
         )
-        self.browser.type(By.CSS_SELECTOR, "#product-audience", "QA automation engineers")
+        self.browser.click(By.XPATH, "//button[contains(., 'Continue')]")
+        time.sleep(1)
 
-        self.browser.click(By.XPATH, "//button[contains(., 'Create Product')]")
+        # Step 3: Audience
+        self.browser.wait_for_element_visible(By.TAG_NAME, "input", timeout=10)
+        self.browser.type(By.TAG_NAME, "input", "QA automation engineers and testers")
+        self.browser.click(By.XPATH, "//button[contains(., 'Continue')]")
+        time.sleep(1)
+
+        # Step 4: Details (optional — just click Continue)
+        self.browser.wait_for_element_visible(By.XPATH, "//h2[contains(., 'different')]", timeout=10)
+        self.browser.click(By.XPATH, "//button[contains(., 'Continue')]")
+        time.sleep(1)
+
+        # Step 5: Confirm — click Create & Launch Pipeline
+        self.browser.wait_for_element_visible(By.XPATH, "//h2[contains(., 'Ready to launch')]", timeout=10)
+        self.browser.click(By.XPATH, "//button[contains(., 'Create')]")
 
         # Wait for redirect to product detail
         time.sleep(5)
 
-        # Assert - should be on product detail page
+        # Assert
         assert "/products/" in self.browser.get_current_url(), \
-            "Should redirect to product detail page after creation"
+            "Should redirect to product detail page after wizard completion"
         assert self.product_detail.is_product_displayed(), \
             "Product name should be visible on detail page"
-        assert self.product_detail.is_run_pipeline_displayed(), \
-            "Run Pipeline button should be visible"
 
     @pytest.mark.digitm_gtm
     @pytest.mark.e2e

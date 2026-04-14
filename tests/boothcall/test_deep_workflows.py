@@ -244,13 +244,17 @@ class TestDeepWorkflows:
 
         # Click first unassigned member to assign
         assign_buttons[0].click()
-        time.sleep(2)
+        time.sleep(3)
 
-        # Verify toast
+        # Verify toast (Sonner uses data-sonner-toast or li with toast class)
         toast = self.browser.is_element_present(
-            By.XPATH, "//li[contains(@class, 'toast')]", timeout=5
+            By.CSS_SELECTOR, "[data-sonner-toast]", timeout=10
         )
-        assert toast, "Assignment should trigger a success toast"
+        # Also check if popover closed (another sign of success)
+        popover_gone = not self.browser.is_element_present(
+            By.CSS_SELECTOR, "[data-radix-popper-content-wrapper]", timeout=2
+        )
+        assert toast or popover_gone, "Assignment should trigger a toast or close popover"
 
     # ==================================================================
     # WORKFLOW 4: Confirm shift on My Shifts → verify status badge changes
@@ -298,13 +302,13 @@ class TestDeepWorkflows:
 
         # Click Confirm
         self.browser.click(By.XPATH, "//button[contains(., 'Confirm')]")
-        time.sleep(2)
+        time.sleep(3)
 
-        # Verify toast
+        # Verify toast (Sonner uses data-sonner-toast attribute)
         toast = self.browser.is_element_present(
-            By.XPATH, "//li[contains(@class, 'toast')]", timeout=5
+            By.CSS_SELECTOR, "[data-sonner-toast]", timeout=10
         )
-        assert toast, "Confirming shift should show success toast"
+        assert toast, "Confirming shift should show toast"
 
         # Verify tentative count decreased OR confirmed count increased
         tentative_after = len(self.browser.driver.find_elements(

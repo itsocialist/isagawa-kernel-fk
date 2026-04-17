@@ -67,5 +67,18 @@
     "explicit_wait": 15,
     "screenshots_on_failure": true,
     "screenshot_dir": "screenshots/digitm_gtm"
+  },
+  "sovai_cannabis_local": {
+    "url": "https://localhost:8443",
+    "explicit_wait": 30,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/sovai_cannabis",
+    "accept_insecure_certs": true
+  },
+  "sovai_cannabis_prod": {
+    "url": "https://cannabis.yourdomain.com",
+    "explicit_wait": 30,
+    "screenshots_on_failure": true,
+    "screenshot_dir": "screenshots/sovai_cannabis"
   }
 }

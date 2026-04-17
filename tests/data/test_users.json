@@ -16,5 +16,9 @@
   "sovai_brian": {
     "email": "brian@itsocialist.com",
     "password": "sovai2025!"
+  },
+  "sovai_cannabis_admin": {
+    "email": "admin@sovai-cannabis.local",
+    "password": "SovCannab1s!2026SecurePass"
   }
 }

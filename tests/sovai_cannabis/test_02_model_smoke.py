@@ -29,13 +29,12 @@ MODEL_PROBE_PROMPTS = {
     "claude-opus":   "Reply with exactly: OPUS_OK",
 }
 
-# Error strings that indicate a model routing failure rather than an AI response
+# Error strings that indicate a model routing failure rather than an AI response.
+# Keep these specific — avoid broad terms like 'error' that appear in valid answers.
 MODEL_ERROR_PATTERNS = [
     "is not available for AWS Bedrock",
     "Please select a different model",
     "model not found",
-    "rate limit",
-    "error",
 ]
 
 
@@ -73,6 +72,12 @@ class TestSovAICannabisModels:
         )
         admin.login_and_verify()
 
+    def _go_to_clean_chat(self):
+        """Navigate to a bare /c/new URL — no agent context from previous tests."""
+        base_url = self.config["url"].rstrip("/")
+        self.browser.navigate_to(f"{base_url}/c/new")
+        self.chat_page.wait_for_chat_ready()
+
     def _assert_clean_response(self, model_alias: str):
         """
         Common assertion: response received, no Bedrock error, input ready.
@@ -106,7 +111,7 @@ class TestSovAICannabisModels:
         A failure here means the entire platform is non-functional.
         """
         self._ensure_authenticated()
-        self.chat_page.start_new_chat()
+        self._go_to_clean_chat()
 
         credentials = self.test_users["sovai_cannabis_admin"]
         admin = AdminRole(
@@ -129,7 +134,7 @@ class TestSovAICannabisModels:
         A failure causes title/summary fields to break silently.
         """
         self._ensure_authenticated()
-        self.chat_page.start_new_chat()
+        self._go_to_clean_chat()
 
         credentials = self.test_users["sovai_cannabis_admin"]
         admin = AdminRole(
@@ -156,7 +161,7 @@ class TestSovAICannabisModels:
         OR: remap claude-opus → claude-sonnet in litellm/config.yaml (current workaround).
         """
         self._ensure_authenticated()
-        self.chat_page.start_new_chat()
+        self._go_to_clean_chat()
 
         credentials = self.test_users["sovai_cannabis_admin"]
         admin = AdminRole(

@@ -86,6 +86,6 @@ class TestSovAICannabisLogin:
             "Chat input should be present and ready"
 
         # Check page title
-        title = self.browser.get_title()
+        title = self.browser.driver.title
         assert "LibreChat" in title or "SovAI" in title, \
             f"Page title should contain LibreChat or SovAI, got: {title}"

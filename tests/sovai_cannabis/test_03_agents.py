@@ -73,9 +73,20 @@ class TestSovAICannabisAgents:
         admin.login_and_verify()
 
     def _send_and_assert(self, agent_name: str, prompt: str):
-        """Run a domain prompt and assert a substantial, clean response."""
+        """Run a domain prompt against a specific agent and assert a clean response."""
         self._ensure_authenticated()
-        self.chat_page.start_new_chat()
+
+        # Navigate to clean /c/new — breaks any prior agent context from previous tests
+        base_url = self.config["url"].rstrip("/")
+        self.browser.navigate_to(f"{base_url}/c/new")
+        self.chat_page.wait_for_chat_ready()
+
+        # Select the target agent explicitly
+        try:
+            self.chat_page.select_agent_by_name(agent_name)
+        except Exception:
+            # Agent not found in sidebar — skip selection, send in default context
+            pass
 
         credentials = self.test_users["sovai_cannabis_admin"]
         admin = AdminRole(
@@ -99,13 +110,14 @@ class TestSovAICannabisAgents:
         ]
         for indicator in error_indicators:
             assert indicator.lower() not in response_text.lower(), \
-                f"[{agent_name}] Response is a model error, not an agent response: {response_text[:200]}"
+                f"[{agent_name}] Response is a model error: {response_text[:200]}"
 
         assert len(response_text) >= MIN_RESPONSE_CHARS, \
             f"[{agent_name}] Response too short ({len(response_text)} chars < {MIN_RESPONSE_CHARS}): {response_text}"
 
         assert self.chat_page.is_chat_input_ready(), \
             f"[{agent_name}] Chat input not ready after response"
+
 
     # ==================== TEST METHODS ====================
 

@@ -211,14 +211,13 @@ class TestContentGatePreview:
         assert self.pipeline.has_preview_header(), \
             "Content gate must show a 'Preview — first N of M' header"
 
-        # At least 3 cards rendered (matches the seed's post count).
-        # The preview block renders in BOTH the stage artifact panel and the
-        # gate artifact panel for a CONTENT_CALENDAR gate, so expect N*2 in
-        # practice. We only need to prove the preview exists with the seeded
-        # posts — exact count is a UI-layout concern, not a gate-preview one.
+        # Exactly 3 cards rendered (matches the seed's post count).
+        # digitm-gtm commit 04291a3 merged the gate's duplicate artifact
+        # panel into the stage card — preview now renders once per stage,
+        # not twice, so a strict == 3 catches regressions of the merge.
         card_count = self.pipeline.count_preview_cards()
-        assert card_count >= 3, \
-            f"Expected >=3 preview cards (matching seed data), got {card_count}"
+        assert card_count == 3, \
+            f"Expected exactly 3 preview cards (matching seed data), got {card_count}"
 
         # Each seeded post's content appears in the preview
         assert self.pipeline.preview_contains_text("PIIShield"), \

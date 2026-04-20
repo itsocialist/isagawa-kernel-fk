@@ -134,3 +134,93 @@ class PipelineViewPage:
             f"//*[contains(normalize-space(.), '#{tag}')]",
         )
         return self.browser.is_element_displayed(*locator, timeout=3)
+
+    # ==================== REGEN UI (B-23) ====================
+
+    # Every regeneratable sub-item card carries an overflow ⋯ trigger with
+    # aria-label="More". The first one in document order is the first post
+    # card (or first asset / tier depending on the active stage).
+    OVERFLOW_TRIGGERS = (By.XPATH, "//button[@aria-label='More']")
+
+    # Menu items (only present while a popover is open)
+    REGEN_MENU_ITEM = (By.XPATH, "//button[normalize-space(text())='Regenerate…']")
+    VIEW_REVISIONS_MENU_ITEM = (
+        By.XPATH,
+        "//button[starts-with(normalize-space(text()), 'View revisions')]",
+    )
+
+    # Regen sheet (role=dialog with 'Regenerate' or 'Regenerate this ...' in aria-label)
+    REGEN_SHEET = (By.XPATH, "//div[@role='dialog'][contains(@aria-label, 'Regenerate')]")
+    REGEN_SHEET_HINT = (
+        By.CSS_SELECTOR,
+        "div[role='dialog'] textarea[placeholder*='punchier']",
+    )
+    REGEN_SHEET_GENERATE = (
+        By.XPATH,
+        "//div[@role='dialog']//button[normalize-space(text())='Generate']",
+    )
+    REGEN_SHEET_CANCEL = (
+        By.XPATH,
+        "//div[@role='dialog']//button[normalize-space(text())='Cancel']",
+    )
+    REGEN_SHEET_CHIP_PUNCHIER = (
+        By.XPATH,
+        "//div[@role='dialog']//button[normalize-space(text())='punchier']",
+    )
+
+    # Prose theme switcher (B-25)
+    PROSE_THEME_SWITCHER = (
+        By.CSS_SELECTOR,
+        "[role='radiogroup'][aria-label='Reading theme']",
+    )
+
+    def count_overflow_triggers(self) -> int:
+        return len(self.browser.find_elements(*self.OVERFLOW_TRIGGERS))
+
+    def open_first_overflow_menu(self) -> "PipelineViewPage":
+        """Click the first ⋯ trigger on the current stage's visible sub-items."""
+        triggers = self.browser.find_elements(*self.OVERFLOW_TRIGGERS)
+        if not triggers:
+            raise AssertionError("No overflow triggers visible on this stage")
+        triggers[0].click()
+        return self
+
+    def click_regenerate_menu_item(self) -> "PipelineViewPage":
+        self.browser.click(*self.REGEN_MENU_ITEM)
+        return self
+
+    def is_regen_sheet_visible(self) -> bool:
+        return self.browser.is_element_displayed(*self.REGEN_SHEET, timeout=3)
+
+    def is_regen_sheet_hint_focused(self) -> bool:
+        """The sheet auto-focuses the hint textarea on open."""
+        el = self.browser.find_element(*self.REGEN_SHEET_HINT)
+        active = self.browser.driver.switch_to.active_element
+        return active == el
+
+    def click_punchier_chip(self) -> "PipelineViewPage":
+        self.browser.click(*self.REGEN_SHEET_CHIP_PUNCHIER)
+        return self
+
+    def regen_hint_value(self) -> str:
+        el = self.browser.find_element(*self.REGEN_SHEET_HINT)
+        return el.get_attribute("value") or ""
+
+    def cancel_regen_sheet(self) -> "PipelineViewPage":
+        self.browser.click(*self.REGEN_SHEET_CANCEL)
+        return self
+
+    def has_prose_theme_switcher(self) -> bool:
+        return self.browser.is_element_displayed(
+            *self.PROSE_THEME_SWITCHER, timeout=3
+        )
+
+    def pick_prose_theme(self, label: str) -> "PipelineViewPage":
+        """Click one of the prose theme pills by visible label."""
+        locator = (
+            By.XPATH,
+            f"//div[@role='radiogroup' and @aria-label='Reading theme']"
+            f"//button[normalize-space(text())='{label}']",
+        )
+        self.browser.click(*locator)
+        return self

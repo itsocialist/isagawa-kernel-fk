@@ -1,84 +1,96 @@
 {
-  "DEFAULT": {
-    "url": "http://www.automationpractice.pl/index.php"
-  },
-  "parabank": {
-    "url": "https://parabank.parasoft.com"
-  },
-  "twentyDemo": {
-    "url": "https://your-crm-instance.example.com"
-  },
-  "pm_hub": {
-    "url": "http://localhost:3000"
-  },
-  "sovai": {
-    "url": "http://localhost:8180"
-  },
-  "ciq_jeopardy": {
-    "url": "http://localhost:5173",
-    "explicit_wait": 15,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/ciq_jeopardy"
-  },
-  "ciq_jeopardy_prod": {
-    "url": "http://45.63.65.128",
-    "explicit_wait": 20,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/ciq_jeopardy_prod"
-  },
-  "cogs_calculator_dev": {
-    "url": "http://localhost:5200",
-    "explicit_wait": 15,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/cogs_calculator"
-  },
-  "cogs_calculator_prod": {
-    "url": "https://cogs-calculator.vercel.app",
-    "explicit_wait": 20,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/cogs_calculator"
-  },
-  "claude_skills_builder": {
-    "url": "http://localhost:7243",
-    "explicit_wait": 10,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/claude_skills_builder"
-  },
-  "meetsync": {
-    "url": "http://localhost:3001",
-    "explicit_wait": 15,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/meetsync"
-  },
-  "revop_intelligence": {
-    "url": "http://localhost:8080",
-    "explicit_wait": 15,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/revop_intelligence"
-  },
-  "boothcall": {
-    "url": "http://localhost:3133",
-    "explicit_wait": 15,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/boothcall"
-  },
-  "digitm_gtm": {
-    "url": "http://localhost:3456",
-    "explicit_wait": 15,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/digitm_gtm"
-  },
-  "sovai_cannabis_local": {
-    "url": "https://localhost:8443",
-    "explicit_wait": 30,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/sovai_cannabis",
-    "accept_insecure_certs": true
-  },
-  "sovai_cannabis_prod": {
-    "url": "https://cannabis.yourdomain.com",
-    "explicit_wait": 30,
-    "screenshots_on_failure": true,
-    "screenshot_dir": "screenshots/sovai_cannabis"
-  }
+    "DEFAULT": {
+        "url": "http://www.automationpractice.pl/index.php"
+    },
+    "parabank": {
+        "url": "https://parabank.parasoft.com"
+    },
+    "twentyDemo": {
+        "url": "https://your-crm-instance.example.com"
+    },
+    "pm_hub": {
+        "url": "http://localhost:3000"
+    },
+    "sovai": {
+        "url": "http://localhost:8180"
+    },
+    "ciq_jeopardy": {
+        "url": "http://localhost:5173",
+        "explicit_wait": 15,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/ciq_jeopardy"
+    },
+    "ciq_jeopardy_prod": {
+        "url": "http://45.63.65.128",
+        "explicit_wait": 20,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/ciq_jeopardy_prod"
+    },
+    "cogs_calculator_dev": {
+        "url": "http://localhost:5200",
+        "explicit_wait": 15,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/cogs_calculator"
+    },
+    "cogs_calculator_prod": {
+        "url": "https://cogs-calculator.vercel.app",
+        "explicit_wait": 20,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/cogs_calculator"
+    },
+    "claude_skills_builder": {
+        "url": "http://localhost:7243",
+        "explicit_wait": 10,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/claude_skills_builder"
+    },
+    "meetsync": {
+        "url": "http://localhost:3001",
+        "explicit_wait": 15,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/meetsync"
+    },
+    "revop_intelligence": {
+        "url": "http://localhost:8080",
+        "explicit_wait": 15,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/revop_intelligence"
+    },
+    "boothcall": {
+        "url": "http://localhost:3133",
+        "explicit_wait": 15,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/boothcall"
+    },
+    "digitm_gtm": {
+        "url": "http://localhost:3456",
+        "explicit_wait": 15,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/digitm_gtm"
+    },
+    "sovai_cannabis_local": {
+        "url": "https://localhost:8443",
+        "explicit_wait": 30,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/sovai_cannabis",
+        "accept_insecure_certs": true
+    },
+    "sovai_cannabis_prod": {
+        "url": "https://cannabis.yourdomain.com",
+        "explicit_wait": 30,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/sovai_cannabis"
+    },
+    "sales_sim_dev": {
+        "url": "http://localhost:4500",
+        "explicit_wait": 15,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/sales_sim"
+    },
+    "sales_sim_prod": {
+        "url": "https://salessim.app",
+        "explicit_wait": 20,
+        "screenshots_on_failure": true,
+        "screenshot_dir": "screenshots/sales_sim_prod"
+    }
 }

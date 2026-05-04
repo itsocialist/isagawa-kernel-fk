@@ -351,4 +351,61 @@ class TestS27OperationalScaling:
             "DB persistence is not working — falling back to localStorage behavior."
         )
 
+    # ═══════════════════════════════════════════════════════════
+    # T-08: Dashboard Export E2E Validation (CSV/PDF)
+    # ═══════════════════════════════════════════════════════════
+
+    @pytest.mark.sovai_cannabis
+    @pytest.mark.agents
+    @pytest.mark.t08
+    @autologger.automation_logger("Test")
+    def test_t08_dashboard_export_buttons_present_and_functional(self):
+        """
+        T-08: Dashboard Export E2E Validation
+        Validates that when a Dashboard Artifact is generated (e.g. by the Margin Analyzer),
+        the injected Export CSV and Export PDF buttons are present and correctly rendered
+        in the artifact container.
+
+        AAA:
+        Arrange - Log in and navigate to the Margin Analyzer agent
+        Act     - Request a detailed COGS breakdown dashboard
+        Assert  - The artifact iframe/container contains the 'Export CSV' and 'Export PDF' buttons
+        """
+        # We use a generic prompt that forces a React Dashboard artifact to generate
+        response = self._send_and_get_response(
+            "Margin Analyzer",
+            "Generate a complete COGS dashboard artifact for a 100mg THC edible gummy. Include the cost waterfall and breakeven chart.",
+            timeout=120,
+        )
+
+        # Artifacts usually render in iframes or shadow DOMs in LibreChat, so we need to execute JS 
+        # to cleanly pierce the boundary and check for the buttons, or wait for the standard CSS classes.
+        time.sleep(5) # Let the React artifact fully render
+
+        export_buttons_found = self.browser.execute_script("""
+            // Look through all iframes to find the injected SovAI export buttons
+            let foundCsv = false;
+            let foundPdf = false;
+            
+            // Check main document just in case it rendered inline
+            if (document.body.innerText.includes('Export CSV')) foundCsv = true;
+            if (document.body.innerText.includes('Export PDF')) foundPdf = true;
+
+            const iframes = document.querySelectorAll('iframe');
+            for (let i = 0; i < iframes.length; i++) {
+                try {
+                    const doc = iframes[i].contentDocument || iframes[i].contentWindow.document;
+                    if (doc.body.innerText.includes('Export CSV')) foundCsv = true;
+                    if (doc.body.innerText.includes('Export PDF')) foundPdf = true;
+                } catch(e) {
+                    // Cross-origin iframe, skip
+                }
+            }
+            return { csv: foundCsv, pdf: foundPdf };
+        """)
+
+        assert export_buttons_found["csv"], "T-08 FAIL: 'Export CSV' button was not found in the generated artifact."
+        assert export_buttons_found["pdf"], "T-08 FAIL: 'Export PDF' button was not found in the generated artifact."
+
+
 

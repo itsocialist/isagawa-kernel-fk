@@ -1,6 +1,6 @@
 {
     "DEFAULT": {
-        "url": "http://www.automationpractice.pl/index.php"
+        "url": "https://localhost:8443"
     },
     "parabank": {
         "url": "https://parabank.parasoft.com"

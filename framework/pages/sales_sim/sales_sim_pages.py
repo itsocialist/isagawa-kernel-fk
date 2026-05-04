@@ -123,6 +123,10 @@ class ConfigPage:
     CHIP_OBJECTION        = (By.ID, "quick-start-objection-gauntlet")
     CHIP_CLOUD11          = (By.ID, "quick-start-cloud-11-ecosystem-demo")
 
+    # Practice Again / New Scenario buttons (returning user dashboard)
+    PRACTICE_AGAIN_BTN    = (By.ID, "btn-practice-again")
+    NEW_SCENARIO_BTN      = (By.ID, "btn-new-scenario")
+
     def __init__(self, browser):
         self.browser = browser
         self.driver  = browser.driver
@@ -156,6 +160,133 @@ class ConfigPage:
         chips = self.get_demo_chips()
         assert chips, "No QUICK START chips found on /home"
         chips[index].click()
+
+    def click_named_quick_start(self, chip_id: str):
+        """
+        Click a Quick Start card by its full element ID (e.g. 'quick-start-cold-discovery').
+        Scrolls into view before clicking to handle off-screen chips.
+        """
+        el = self.driver.find_element(By.ID, chip_id)
+        self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", el)
+        self.driver.execute_script("arguments[0].click();", el)
+
+    def inject_pending_config(self, config: dict):
+        """
+        Write a SimulationConfig to localStorage as 'speakerhero_pending_config'.
+        Simulates what the home-page Quick Start cards do before navigating to /app.
+        The /app page reads this on mount and skips the wizard, going straight to chat.
+        """
+        import json
+        self.driver.execute_script(
+            "window.localStorage.setItem('speakerhero_pending_config', arguments[0]);",
+            json.dumps(config)
+        )
+
+    def inject_last_config(self, config: dict):
+        """
+        Write a SimulationConfig to localStorage as 'speakerhero_last_config'.
+        Simulates the config stored after a successful session (used by 'Practice Again').
+        """
+        import json
+        self.driver.execute_script(
+            "window.localStorage.setItem('speakerhero_last_config', arguments[0]);",
+            json.dumps(config)
+        )
+
+
+class PackSelectorPage:
+    """
+    Pack Selector wizard — /app when appState == 'select'
+
+    Models the 4-step configuration wizard:
+      Step 1 (context): Product + ICP selection
+      Step 2 (role):    Training Pack
+      Step 3 (subject): Subject (stakeholder archetype)
+      Step 4 (scenario): Scenario
+
+    Selectors match id attributes in PackSelector.tsx.
+    """
+
+    # Step navigation pills / buttons
+    STEP_CONTEXT  = (By.CSS_SELECTOR, "[data-step='context'], button[id*='step-context']")
+    STEP_ROLE     = (By.CSS_SELECTOR, "[data-step='role'], button[id*='step-role']")
+    STEP_SUBJECT  = (By.CSS_SELECTOR, "[data-step='subject'], button[id*='step-subject']")
+    STEP_SCENARIO = (By.CSS_SELECTOR, "[data-step='scenario'], button[id*='step-scenario']")
+
+    # Step header text — used as a reliable "which step am I on?" indicator
+    STEP_HEADER   = (By.CSS_SELECTOR, ".pack-selector-step-header, h2.step-title, [class*='step-header']")
+
+    # The "Complete All Steps to Start" / "Start Training" button
+    START_BTN     = (By.XPATH, "//button[contains(text(),'Start') or contains(text(),'Complete All Steps')]")
+
+    # Generic card selectors for selectable items (products, ICPs, training packs, etc.)
+    SELECTABLE_CARD = (By.CSS_SELECTOR, "[data-selectable='true'], .pack-card, [class*='selectable']")
+
+    def __init__(self, browser):
+        self.browser = browser
+        self.driver  = browser.driver
+
+    def navigate(self, base_url):
+        """Navigate directly to the wizard at /app."""
+        self.browser.navigate_to(f"{base_url}/app")
+
+    def wait_for_wizard(self, timeout=20):
+        """Wait until the Start button is present — wizard is mounted."""
+        WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located(self.START_BTN)
+        )
+
+    def get_start_button(self):
+        """Return the Start/Complete-All-Steps button element."""
+        return self.driver.find_element(*self.START_BTN)
+
+    def is_start_enabled(self):
+        """
+        Return True if the Start Training button is fully enabled.
+        Handles both the disabled attribute and aria-disabled patterns.
+        """
+        try:
+            btn = self.get_start_button()
+            disabled_attr = btn.get_attribute("disabled")
+            aria_disabled  = btn.get_attribute("aria-disabled")
+            # A button is enabled when neither attribute signals disabled
+            return (
+                disabled_attr is None and
+                aria_disabled not in ("true", "1")
+            )
+        except Exception:
+            return False
+
+    def wait_for_start_enabled(self, timeout=15):
+        """Wait until the Start button becomes enabled (all steps satisfied)."""
+        WebDriverWait(self.driver, timeout).until(
+            lambda d: self.is_start_enabled()
+        )
+
+    def wait_for_start_disabled(self, timeout=10):
+        """Assert the button stays disabled (used in regression guards)."""
+        WebDriverWait(self.driver, timeout).until(
+            lambda d: not self.is_start_enabled()
+        )
+
+    def click_start(self):
+        """Click the Start Training button (assumes it is enabled)."""
+        btn = self.get_start_button()
+        self.driver.execute_script("arguments[0].click();", btn)
+
+    def is_on_wizard(self):
+        """Return True if the pack-selector wizard is rendered on /app."""
+        try:
+            return self.get_start_button().is_displayed()
+        except Exception:
+            return False
+
+    def is_on_chat(self):
+        """Return True if the page has transitioned to the chat view (simulation input visible)."""
+        try:
+            return self.driver.find_element(By.ID, "simulation-input").is_displayed()
+        except Exception:
+            return False
 
 
 class ChatPage:

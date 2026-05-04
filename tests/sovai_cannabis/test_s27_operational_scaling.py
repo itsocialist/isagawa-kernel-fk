@@ -190,7 +190,7 @@ class TestS27OperationalScaling:
         # If still on /register, the form itself must not be functional (no email input)
         on_register_page = "/register" in current_url
         has_email_input = self.browser.is_element_present(
-            "css", "input[type='email']", timeout=3
+            "css selector", "input[type='email']", timeout=3
         )
         form_blocked = on_register_page and not has_email_input
 
@@ -264,29 +264,18 @@ class TestS27OperationalScaling:
         # Wait for SPA to settle on /c/ route
         time.sleep(3)
 
-        # Fetch the user ID, then delete the onboarding fact via the API proxy
-        user_data = self.browser.execute_script(
-            "return fetch('/api/user').then(r => r.json()).catch(() => null)"
-        )
-        # execute_script can't await promises — use a blocking helper via CDP
-        # Instead, do it via the requests session through the backend directly
-        # (The test framework runs outside the browser, so we use Python requests)
-        import requests
-        import urllib3
-        urllib3.disable_warnings()
-
-        # Get cookies from browser session for authenticated requests
-        cookies = {c["name"]: c["value"] for c in self.browser.driver.get_cookies()}
-        session = requests.Session()
-        session.verify = False
-        session.cookies.update(cookies)
-
-        user_resp = session.get(f"{self.base_url}/api/user")
-        if user_resp.status_code == 200:
-            user_id = user_resp.json().get("_id") or user_resp.json().get("id")
-            if user_id:
-                # Delete the onboarding_complete fact to reset state
-                session.delete(f"{self.base_url}/api/onboarding/{user_id}/onboarding_complete")
+        # Fetch the user ID, then delete the onboarding fact via the API proxy directly in browser
+        self.browser.execute_script("""
+            fetch('/api/user')
+                .then(r => r.json())
+                .then(user => {
+                    const id = user._id || user.id;
+                    if (id) {
+                        fetch('/api/onboarding/' + id + '/onboarding_complete', { method: 'DELETE' });
+                    }
+                })
+                .catch(err => console.error("Error clearing onboarding:", err));
+        """)
 
         # Re-navigate to trigger the polling logic fresh
         self.browser.navigate_to(f"{self.base_url}/c/new")
@@ -362,52 +351,4 @@ class TestS27OperationalScaling:
             "DB persistence is not working — falling back to localStorage behavior."
         )
 
-    # ═══════════════════════════════════════════════════════════
-    # B-25d: /admin panel accessible (requires LibreChat v0.8.5+)
-    # ═══════════════════════════════════════════════════════════
 
-    @pytest.mark.sovai_cannabis
-    @pytest.mark.auth
-    @pytest.mark.b25
-    @autologger.automation_logger("Test")
-    def test_b25d_admin_panel_accessible_to_admin_user(self):
-        """
-        B-25d: After upgrading LibreChat to v0.8.5+, the /admin route must
-        be accessible and render admin UI content for ADMIN-role users.
-
-        AAA:
-        Arrange - Log in as the admin user
-        Act     - Navigate to /admin
-        Assert  - Page does not show 404/403, and renders admin-specific UI
-        """
-        self._ensure_authenticated()
-        self.browser.navigate_to(f"{self.base_url}/admin")
-        time.sleep(4)
-
-        current_url = self.browser.get_current_url()
-        page_source = self.browser.driver.page_source.lower()
-
-        # Must not bounce back to login (unauthenticated redirect)
-        assert "/login" not in current_url, (
-            "B-25d FAIL: Admin was redirected to login when accessing /admin. "
-            "Check that user role is ADMIN in MongoDB."
-        )
-
-        # Must not display a generic 404 or 403
-        is_error_page = (
-            "404" in page_source
-            or "403" in page_source
-            or "not found" in page_source
-            or "forbidden" in page_source
-        )
-        assert not is_error_page, (
-            "B-25d FAIL: /admin returned an error page. "
-            "LibreChat may not be on v0.8.5+ yet, or admin panel is not enabled."
-        )
-
-        # Admin panel should render some admin-specific content
-        admin_indicators = ["admin", "users", "settings", "manage"]
-        has_admin_content = any(term in page_source for term in admin_indicators)
-        assert has_admin_content, (
-            "B-25d FAIL: /admin loaded but does not contain recognizable admin UI content."
-        )

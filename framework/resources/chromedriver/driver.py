@@ -58,6 +58,10 @@ def create_driver(headless=False, window_size="1920x1080", browser="chrome"):
     """
     # Configure Chrome options (works for Brave since it's Chromium-based)
     chrome_options = Options()
+    
+    # Required for self-signed certificates in local environments
+    chrome_options.add_argument("--ignore-certificate-errors")
+    chrome_options.add_argument("--allow-insecure-localhost")
 
     # Set Brave binary location if using Brave
     if browser.lower() == "brave":

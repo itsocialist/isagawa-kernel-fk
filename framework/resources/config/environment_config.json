@@ -88,7 +88,7 @@
         "screenshot_dir": "screenshots/sales_sim"
     },
     "sales_sim_prod": {
-        "url": "https://salessim.app",
+        "url": "https://speakerhero.app",
         "explicit_wait": 20,
         "screenshots_on_failure": true,
         "screenshot_dir": "screenshots/sales_sim_prod"

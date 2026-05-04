@@ -107,7 +107,7 @@ class TestEntitlements:
         # Wait for the modal to appear
         try:
             modal = WebDriverWait(self.browser.driver, 5).until(
-                EC.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Upgrade to Hero Tier')]"))
+                EC.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Daily Limit Reached')]"))
             )
             assert modal is not None, "PaywallModal did not render"
             
@@ -117,7 +117,7 @@ class TestEntitlements:
             
             # Wait for it to disappear
             WebDriverWait(self.browser.driver, 5).until(
-                EC.invisibility_of_element_located((By.XPATH, "//*[contains(text(), 'Upgrade to Hero Tier')]"))
+                EC.invisibility_of_element_located((By.XPATH, "//*[contains(text(), 'Daily Limit Reached')]"))
             )
         except Exception as e:
             pytest.fail(f"PaywallModal failed to render or close: {e}")

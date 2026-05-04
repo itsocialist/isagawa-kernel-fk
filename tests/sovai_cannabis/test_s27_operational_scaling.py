@@ -59,10 +59,9 @@ class TestS27OperationalScaling:
     def _send_and_get_response(self, agent_name: str, prompt: str, timeout: int = 90) -> str:
         """Navigate to an agent, send a prompt, and return the response text."""
         self._ensure_authenticated()
-        self.chat_page.start_new_conversation()
-        self.chat_page.select_agent(agent_name)
-        self.chat_page.type_message(prompt)
-        self.chat_page.send_message()
+        self.chat_page.start_new_chat()
+        self.chat_page.select_agent_by_name(agent_name)
+        self.chat_page.send_message(prompt)
         self.chat_page.wait_for_response(timeout=timeout)
         return self.chat_page.get_last_response_text()
 

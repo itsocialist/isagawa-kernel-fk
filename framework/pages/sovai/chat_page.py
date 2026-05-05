@@ -86,23 +86,28 @@ class ChatPage:
         return self
 
     def open_model_selector(self) -> "ChatPage":
-        """Click the model/agent selector button in the top bar."""
+        """Click the model/agent selector button in the top bar using JS."""
         self.browser.wait_for_element_visible(*self.MODEL_SELECTOR, timeout=20)
-        self.browser.click(*self.MODEL_SELECTOR)
+        el = self.browser.find_element(*self.MODEL_SELECTOR)
+        self.browser.execute_script("arguments[0].click();", el)
         time.sleep(1)
         return self
 
     def click_agents_menu(self) -> "ChatPage":
-        """Click the 'My Agents' menu item in the model selector dropdown."""
-        self.browser.click(*self.AGENTS_MENU)
+        """Click the 'My Agents' menu item in the model selector dropdown using JS."""
+        self.browser.wait_for_element_visible(*self.AGENTS_MENU, timeout=10)
+        el = self.browser.find_element(*self.AGENTS_MENU)
+        self.browser.execute_script("arguments[0].click();", el)
         time.sleep(1)
         return self
 
     def select_agent_by_name(self, agent_name: str) -> "ChatPage":
-        """Select an agent by matching its name in the agent list."""
+        """Select an agent by matching its name in the agent list using JS."""
         # Use role='option' divs and match by text content
         agent_locator = (By.XPATH, f"//div[@role='option'][.//span[contains(text(), '{agent_name}')]]")
-        self.browser.click(*agent_locator)
+        self.browser.wait_for_element_visible(*agent_locator, timeout=10)
+        el = self.browser.find_element(*agent_locator)
+        self.browser.execute_script("arguments[0].click();", el)
         time.sleep(2)
         return self
 
@@ -120,8 +125,9 @@ class ChatPage:
         return self
 
     def click_send(self) -> "ChatPage":
-        """Click the send button."""
-        self.browser.click(*self.SEND_BUTTON)
+        """Click the send button using JS to bypass overlays."""
+        el = self.browser.find_element(*self.SEND_BUTTON)
+        self.browser.execute_script("arguments[0].click();", el)
         return self
 
     def send_message(self, message: str) -> "ChatPage":

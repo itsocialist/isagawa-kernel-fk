@@ -152,3 +152,37 @@ class TestS31AgentQuality:
         response_lower = response.lower()
         assert "dead stock" in response_lower or "markdown" in response_lower, "Agent did not identify dead stock."
         assert "margin" in response_lower and "velocity" in response_lower, "Agent did not analyze velocity/margin."
+
+    @pytest.mark.sovai_cannabis
+    @pytest.mark.agents
+    @pytest.mark.s31
+    @autologger.automation_logger("Test")
+    def test_agent_3_compliance_auditor_artifact(self):
+        """
+        Agent 3: Compliance Auditor
+        Should generate a React artifact with Export CSV and Export PDF functionality.
+        """
+        response = self._send_and_get_response(
+            "Compliance Auditor",
+            "Please run a compliance audit for CA and generate the Score Card artifact with Export CSV and Export PDF buttons."
+        )
+        
+        response_lower = response.lower()
+        assert "click to close" in response_lower or self.chat_page.has_artifact_button(), "Agent did not generate an artifact button."
+
+    @pytest.mark.sovai_cannabis
+    @pytest.mark.agents
+    @pytest.mark.s31
+    @autologger.automation_logger("Test")
+    def test_agent_2_margin_analyzer_investor_report(self):
+        """
+        Agent 2: Margin Analyzer
+        Should be wired to generate the Investor Report artifact when requested.
+        """
+        response = self._send_and_get_response(
+            "Margin Analyzer",
+            "Generate an Investor Report with a full financial summary, 280E impact, and cash flow."
+        )
+        
+        response_lower = response.lower()
+        assert "click to close" in response_lower or self.chat_page.has_artifact_button(), "Agent did not generate an artifact button."

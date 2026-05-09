@@ -658,9 +658,25 @@ class LabsPlayPage:
         self.driver  = browser.driver
 
     def wait_for_load(self, timeout=15):
-        """Wait for the play page to render (input bar visible)."""
-        WebDriverWait(self.driver, timeout).until(
-            EC.presence_of_element_located(self.SIM_INPUT)
+        """Wait for the play page to render (input bar visible).
+
+        Uses JS querySelector polling instead of Selenium locator because
+        Next.js Suspense boundaries hydrate the #simulation-input element
+        asynchronously — headless Chrome's native EC.presence_of_element
+        misses it, but querySelector finds it reliably.
+        """
+        import time as _time
+        deadline = _time.monotonic() + timeout
+        while _time.monotonic() < deadline:
+            found = self.driver.execute_script(
+                "return !!document.querySelector('#simulation-input, [placeholder*=\"Reply\"], input[type=\"text\"]')"
+            )
+            if found:
+                return
+            _time.sleep(0.5)
+        raise TimeoutError(
+            f"LabsPlayPage.wait_for_load timed out after {timeout}s — "
+            "#simulation-input not found in DOM"
         )
 
     def is_connecting(self):

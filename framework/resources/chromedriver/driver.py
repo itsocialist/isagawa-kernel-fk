@@ -88,6 +88,14 @@ def create_driver(headless=False, window_size="1920x1080", browser="chrome"):
     chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
     chrome_options.add_experimental_option("useAutomationExtension", False)
 
+    # Media permissions: auto-grant mic/camera and use fake devices.
+    # Pages that call getUserMedia (e.g. voice simulations) will block on the
+    # permission dialog without these, preventing Selenium from interacting
+    # with post-dialog DOM elements.
+    chrome_options.add_argument("--use-fake-ui-for-media-stream")
+    chrome_options.add_argument("--use-fake-device-for-media-stream")
+    chrome_options.add_argument("--autoplay-policy=no-user-gesture-required")
+
     # Suppress logging
     chrome_options.add_argument("--log-level=3")
     chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])

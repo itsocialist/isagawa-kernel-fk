@@ -60,6 +60,8 @@ class TestS27OperationalScaling:
         """Navigate to an agent, send a prompt, and return the response text."""
         self._ensure_authenticated()
         self.chat_page.start_new_chat()
+        self.chat_page.open_model_selector()
+        self.chat_page.click_agents_menu()
         self.chat_page.select_agent_by_name(agent_name)
         self.chat_page.send_message(prompt)
         self.chat_page.wait_for_response(timeout=timeout)
@@ -263,18 +265,23 @@ class TestS27OperationalScaling:
         # Wait for SPA to settle on /c/ route
         time.sleep(3)
 
-        # Fetch the user ID, then delete the onboarding fact via the API proxy directly in browser
+        # Re-initialize the onboarding state to 'false' via the /api/memory/ endpoint
         self.browser.execute_script("""
-            fetch('/api/user')
-                .then(r => r.json())
-                .then(user => {
-                    const id = user._id || user.id;
-                    if (id) {
-                        fetch('/api/onboarding/' + id + '/onboarding_complete', { method: 'DELETE' });
-                    }
-                })
-                .catch(err => console.error("Error clearing onboarding:", err));
+            window.__sovaiTestFetchDone = false;
+            fetch('/api/memory/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: 'onboarding_complete', value: 'false', confidence: 1.0 })
+            })
+            .then(r => { window.__sovaiTestFetchDone = true; })
+            .catch(err => { window.__sovaiTestFetchDone = true; console.error(err); });
         """)
+
+        # Wait for the async fetch to hit the network before navigating away
+        for _ in range(20):
+            if self.browser.execute_script("return window.__sovaiTestFetchDone;"):
+                break
+            time.sleep(0.2)
 
         # Re-navigate to trigger the polling logic fresh
         self.browser.navigate_to(f"{self.base_url}/c/new")

@@ -25,26 +25,59 @@ class TestVoiceProfileAdmin:
         """GIVEN a site admin
         WHEN they navigate to the Admin panel Voices tab
         THEN the voice profile table loads with seeded archetype rows"""
-        # TDD stub
-        pass
+        authenticated_driver.get(f"{BASE_URL}/admin?tab=voices")
+        wait = WebDriverWait(authenticated_driver, 10)
+        table = wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+        assert "champion" in table.text
 
     def test_multi_provider_edit_persists(self, authenticated_driver):
         """GIVEN a site admin edits a voice profile row
         WHEN they update the Fish Audio Model ID and OpenAI Voice fields and click Save
         THEN the changes persist after page reload"""
-        # TDD stub
-        pass
+        authenticated_driver.get(f"{BASE_URL}/admin?tab=voices")
+        wait = WebDriverWait(authenticated_driver, 10)
+        
+        # Click Edit on the first row
+        edit_btns = wait.until(EC.presence_of_all_elements_located((By.XPATH, "//button[contains(text(), 'Edit')]")))
+        edit_btns[0].click()
+        
+        # Wait for inputs to appear
+        inputs = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "input")))
+        assert len(inputs) >= 3 # ElevenLabs, Fish, OpenAI
+        
+        # Enter test data into Fish input (2nd input)
+        inputs[1].clear()
+        inputs[1].send_keys("test_fish_id")
+        
+        # Save
+        save_btn = authenticated_driver.find_element(By.XPATH, "//button[contains(text(), 'Save')]")
+        save_btn.click()
+        
+        # Wait for Toast or success
+        wait.until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(), 'Voice profile updated successfully')]")))
+        
+        # Reload and verify
+        authenticated_driver.refresh()
+        wait.until(EC.presence_of_element_located((By.TAG_NAME, "table")))
+        assert "test_fish_id" in authenticated_driver.page_source
 
     def test_voice_preview_plays_audio(self, authenticated_driver):
         """GIVEN a site admin clicks the play button on a voice profile row
         WHEN TTS synthesis completes
         THEN audio plays inline in the browser without navigation"""
-        # TDD stub
-        pass
+        authenticated_driver.get(f"{BASE_URL}/admin?tab=voices")
+        wait = WebDriverWait(authenticated_driver, 10)
+        
+        play_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '▶️')]")))
+        play_btn.click()
+        
+        # Wait for play button to change to stop
+        wait.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '⏹️')]")))
+        assert "⏹️" in authenticated_driver.page_source
 
     def test_add_new_archetype_creates_row(self, authenticated_driver):
         """GIVEN a site admin clicks 'Add Voice Profile'
         WHEN they fill in archetype_key, name, gender, age_range, and voice IDs
         THEN the new archetype appears in the table after save"""
-        # TDD stub
-        pass
+        # Out of scope for S11-VOICE-01 (Only multi-provider edit/preview required)
+        pytest.skip("Out of scope for Sprint 11")

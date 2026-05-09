@@ -27,6 +27,7 @@ Run:
   pytest tests/sales_sim/test_s10_regressions.py --env=sales_sim_dev -v
 """
 
+import os
 import json
 import time
 import pytest
@@ -180,6 +181,28 @@ class TestS10Regressions:
 
         # Navigate first to establish origin for localStorage ops
         browser.navigate_to(self.base_url)
+        browser.driver.delete_all_cookies()
+
+        # Inject auth cookies
+        raw_cookies = os.environ.get("SPEAKERHERO_COOKIES", "")
+        if raw_cookies:
+            try:
+                import json
+                is_https = self.base_url.startswith("https://")
+                from urllib.parse import urlparse
+                host = urlparse(self.base_url).hostname
+                for cookie in json.loads(raw_cookies):
+                    browser.driver.add_cookie({
+                        "name":     cookie["name"],
+                        "value":    cookie["value"],
+                        "domain":   host,
+                        "path":     cookie.get("path", "/"),
+                        "secure":   is_https,
+                        "httpOnly": cookie.get("httpOnly", False),
+                    })
+            except Exception as e:
+                pytest.skip(f"SPEAKERHERO_COOKIES malformed — {e}")
+                
         # Clear any stale session data that could bleed between tests
         browser.driver.execute_script("""
             window.localStorage.removeItem('speakerhero_pending_config');
@@ -187,8 +210,12 @@ class TestS10Regressions:
             window.sessionStorage.clear();
         """)
 
+        # Navigate to /home to verify auth
+        browser.navigate_to(self.base_url + "/home")
+        import time
+        time.sleep(2)
+        
         # Detect if we are unauthenticated so individual tests can skip cleanly.
-        # We check the /app route once here and cache the result.
         self._is_authed = not self.config_page.is_redirected_to_login()
 
     # -------------------------------------------------------------------------
@@ -233,7 +260,7 @@ class TestS10Regressions:
             on_chat   = bool(d.find_elements(By.ID, "simulation-input"))
             on_wizard = bool(d.find_elements(
                 By.XPATH,
-                "//button[contains(text(),'Complete All Steps') or contains(text(),'Start Training')]"
+                "//button[contains(text(),'COMPLETE ALL STEPS TO START') or contains(text(),'START SIMULATION')]"
             ))
             return on_login or on_chat or on_wizard
 
@@ -275,7 +302,12 @@ class TestS10Regressions:
             )
 
         self.config_page.navigate(self.base_url)
-        self.config_page.wait_for_load(timeout=20)
+        try:
+            self.config_page.wait_for_load(timeout=20)
+        except Exception as e:
+            print(f"FAILED TO LOAD HOME. URL: {self.browser.driver.current_url}")
+            print(f"BODY: {self.browser.driver.find_element(By.TAG_NAME, 'body').text}")
+            raise e
 
         _skip_if_no_auth(self.config_page)
 
@@ -301,7 +333,7 @@ class TestS10Regressions:
                 bool(d.find_elements(By.ID, "simulation-input")) or
                 bool(d.find_elements(
                     By.XPATH,
-                    "//button[contains(text(),'Complete All Steps') or contains(text(),'Start Training')]"
+                    "//button[contains(text(),'COMPLETE ALL STEPS TO START') or contains(text(),'START SIMULATION')]"
                 ))
             )
 

@@ -27,6 +27,17 @@ from interfaces.browser_interface import BrowserInterface
 
 logger = logging.getLogger("BrowserInterface")
 
+# Auto-load cached cookies so manual `export SPEAKERHERO_COOKIES=...` is not required
+if not os.environ.get("SPEAKERHERO_COOKIES"):
+    cache_path = os.path.expanduser("~/.speakerhero_cookies.json")
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                cache_data = json.load(f)
+                os.environ["SPEAKERHERO_COOKIES"] = json.dumps(cache_data.get("cookies", []))
+        except Exception:
+            pass
+
 
 # ------------------------------------------------------------------------------
 # Command line options

@@ -217,7 +217,7 @@ class PackSelectorPage:
     STEP_HEADER   = (By.CSS_SELECTOR, ".pack-selector-step-header, h2.step-title, [class*='step-header']")
 
     # The "Complete All Steps to Start" / "Start Training" button
-    START_BTN     = (By.XPATH, "//button[contains(text(),'Start') or contains(text(),'Complete All Steps')]")
+    START_BTN     = (By.XPATH, "//button[contains(text(),'START SIMULATION') or contains(text(),'COMPLETE ALL STEPS TO START')]")
 
     # Generic card selectors for selectable items (products, ICPs, training packs, etc.)
     SELECTABLE_CARD = (By.CSS_SELECTOR, "[data-selectable='true'], .pack-card, [class*='selectable']")
@@ -567,3 +567,161 @@ class DebriefPage:
             return True
         except Exception:
             return False
+
+
+class LabsPage:
+    """
+    Labs landing page — /labs (Hard Conversations)
+    Lists scenario cards for anonymous practice sessions.
+    No auth required.
+    """
+
+    # Scenario cards identified by their heading text
+    RAISE_CARD        = (By.XPATH, "//*[contains(text(),'Ask for a Raise')]")
+    CAR_CARD          = (By.XPATH, "//*[contains(text(),'Negotiate a Car Purchase')]")
+    BURNOUT_CARD      = (By.XPATH, "//*[contains(text(),\"Tell Your Manager You're Burned Out\")]")
+    DECLINE_CARD      = (By.XPATH, "//*[contains(text(),\"Decline a Promotion You Don't Want\")]")
+    # Header/brand elements
+    BRAND_LABEL       = (By.XPATH, "//*[contains(text(),'Hard Conversations')]")
+    RESEARCH_BADGE    = (By.XPATH, "//*[contains(text(),'RESEARCH PREVIEW')]")
+    # Hero text
+    HERO_HEADING      = (By.XPATH, "//h1")
+
+    def __init__(self, browser):
+        self.browser = browser
+        self.driver  = browser.driver
+
+    def navigate(self, base_url):
+        self.browser.navigate_to(f"{base_url}/labs")
+
+    def wait_for_load(self, timeout=15):
+        WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located(self.RAISE_CARD)
+        )
+
+    def is_loaded(self, timeout=10):
+        try:
+            self.wait_for_load(timeout)
+            return True
+        except Exception:
+            return False
+
+    def click_raise_scenario(self):
+        el = self.driver.find_element(*self.RAISE_CARD)
+        el.click()
+
+    def click_car_scenario(self):
+        el = self.driver.find_element(*self.CAR_CARD)
+        el.click()
+
+    def click_burnout_scenario(self):
+        el = self.driver.find_element(*self.BURNOUT_CARD)
+        el.click()
+
+    def get_scenario_count(self):
+        """Count visible scenario cards by checking known scenario titles."""
+        count = 0
+        for locator in [self.RAISE_CARD, self.CAR_CARD, self.BURNOUT_CARD, self.DECLINE_CARD]:
+            try:
+                if self.driver.find_element(*locator).is_displayed():
+                    count += 1
+            except Exception:
+                pass
+        return count
+
+
+class LabsPlayPage:
+    """
+    Labs simulation runner — /labs/play
+    Anonymous simulation page. Uses SimulationChat component with source='labs'.
+    Key difference from ChatPage: no auth required.
+    """
+
+    # Simulation UI elements (shared IDs with ChatPage)
+    SIM_INPUT          = (By.ID, "simulation-input")
+    SEND_BTN           = (By.ID, "send-btn")
+    VOICE_TOGGLE       = (By.ID, "voice-mode-toggle")
+    # Header elements specific to Labs play
+    BACK_TO_LABS       = (By.XPATH, "//*[contains(text(),'Hard Conversations')]")
+    END_BTN            = (By.XPATH, "//button[contains(text(),'END')]")
+    # Connecting state — visible before opening message arrives
+    CONNECTING_LABEL   = (By.XPATH, "//*[contains(text(),'CONNECTING')]")
+    JOINING_CALL       = (By.XPATH, "//*[contains(text(),'is joining the call')]")
+    # Message elements
+    MSG_GROUP          = (By.CSS_SELECTOR, ".sim-msg-group")
+    ASSISTANT_MSG      = (By.XPATH, "//div[contains(@class,'sim-msg-group')]//p")
+    # Streaming indicator
+    TYPING_DOTS        = (By.CSS_SELECTOR, ".animate-bounce")
+
+    def __init__(self, browser):
+        self.browser = browser
+        self.driver  = browser.driver
+
+    def wait_for_load(self, timeout=15):
+        """Wait for the play page to render (input bar visible)."""
+        WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located(self.SIM_INPUT)
+        )
+
+    def is_connecting(self):
+        """Check if still in the 'CONNECTING...' pre-opening state."""
+        try:
+            return self.driver.find_element(*self.CONNECTING_LABEL).is_displayed()
+        except Exception:
+            return False
+
+    def wait_for_opening_message(self, timeout=90):
+        """
+        Wait for the AI prospect's opening message to arrive.
+        The CONNECTING label disappears and a .sim-msg-group appears.
+        Returns True if opening arrived, False if timed out.
+        """
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located(self.MSG_GROUP)
+            )
+            return True
+        except Exception:
+            return False
+
+    def get_message_count(self):
+        """Count visible message groups."""
+        return len(self.driver.find_elements(*self.MSG_GROUP))
+
+    def get_last_assistant_message(self):
+        """Get the text of the last assistant message."""
+        msgs = self.driver.find_elements(*self.ASSISTANT_MSG)
+        return msgs[-1].text if msgs else ""
+
+    def send_message(self, text):
+        """Type and send a message in the chat input."""
+        inp = self.driver.find_element(*self.SIM_INPUT)
+        inp.clear()
+        inp.send_keys(text)
+        self.driver.find_element(*self.SEND_BTN).click()
+
+    def wait_for_response(self, initial_count, timeout=60):
+        """
+        Wait for a new assistant message after sending.
+        Returns True if a new message appeared.
+        """
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                lambda d: len(d.find_elements(*self.MSG_GROUP)) > initial_count
+            )
+            return True
+        except Exception:
+            return False
+
+    def click_end_session(self):
+        """Click the END button to transition to debrief."""
+        self.driver.find_element(*self.END_BTN).click()
+
+    def is_input_enabled(self):
+        """Check if the chat input is enabled (not disabled by loading state)."""
+        try:
+            inp = self.driver.find_element(*self.SIM_INPUT)
+            return inp.is_enabled()
+        except Exception:
+            return False
+

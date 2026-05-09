@@ -66,3 +66,34 @@ class TestProsumerPricing:
         THEN no paywall appears
         """
         pass
+
+
+class TestStripePaywallInfrastructure:
+    """S12-STRIPE-02: Stripe checkout, webhooks, and subscription enforcement."""
+
+    def test_checkout_endpoint_returns_session_url(self, authenticated_driver):
+        """
+        GIVEN the /api/stripe/checkout endpoint
+        WHEN called with a valid plan
+        THEN it returns a Stripe Checkout Session URL
+        """
+        # TDD stub — POST to checkout API, verify redirect URL
+        pass
+
+    def test_webhook_creates_subscription_row(self, authenticated_driver):
+        """
+        GIVEN the /api/stripe/webhook endpoint
+        WHEN a checkout.session.completed event fires
+        THEN a subscription row is inserted in Supabase
+        """
+        # TDD stub — simulate webhook event, verify DB state via admin API
+        pass
+
+    def test_expired_subscription_shows_paywall(self, authenticated_driver):
+        """
+        GIVEN an expired or cancelled subscription
+        WHEN the user tries to start a simulation
+        THEN the paywall modal re-appears
+        """
+        # TDD stub — set subscription status to expired, verify paywall
+        pass

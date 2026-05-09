@@ -101,6 +101,37 @@ class TestVoiceMicRegressionGate:
         pass
 
 
+class TestVoicePipelineCleanup:
+    """S12-VOICE-04: Voice pipeline is clean and functional."""
+
+    def test_voice_mode_shows_listening_on_speech(self, authenticated_driver):
+        """
+        GIVEN voice mode activated via the toggle
+        WHEN I speak into the mic
+        THEN the VoiceDuplexOverlay shows LISTENING status and transcription appears
+        """
+        # TDD stub — activate voice, verify overlay status text
+        pass
+
+    def test_single_get_user_media_stream(self, authenticated_driver):
+        """
+        GIVEN the @itsocialist/voice package at commit da77feb
+        WHEN startSession() is called
+        THEN only ONE getUserMedia stream is active (permission-check stream stopped)
+        """
+        # TDD stub — inject MediaStream counter, verify count == 1
+        pass
+
+    def test_admin_voice_profile_persists_on_reload(self, authenticated_driver):
+        """
+        GIVEN the admin Voices tab
+        WHEN a site admin edits a voice profile
+        THEN the change persists on page reload
+        """
+        # TDD stub — edit voice profile, reload, verify persistence
+        pass
+
+
 class TestDemoPresetResolution:
     """S12-PACK-01: All demo presets resolve without errors."""
 

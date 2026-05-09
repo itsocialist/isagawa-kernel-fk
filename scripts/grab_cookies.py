@@ -227,7 +227,8 @@ def decrypt_cookie_value(encrypted_value: bytes, key: bytes) -> str:
     return encrypted_value.decode("utf-8", errors="replace")
 
 
-# ── Cookie Extraction ──────────────────────────────────────────────────────────
+
+# ── CDP-based Cookie Extraction (Chrome 130+ compatible) ───────────────────────
 
 def extract_cookies(
     domain: str,
@@ -236,64 +237,85 @@ def extract_cookies(
     refresh: bool = False,
 ) -> list[dict]:
     """
-    Extract and decrypt cookies for the given domain.
-    Checks cache first (50m TTL) to avoid repeated Keychain prompts.
-    Returns a list of dicts compatible with Selenium's driver.add_cookie().
+    Extract cookies for the given domain using Selenium + ChromeDriver.
+
+    Chrome 130+ enabled App-Bound Encryption which moved cookies out of the
+    plaintext SQLite DB. This approach launches a Chrome session, navigates to
+    the target domain, and reads cookies via ChromeDriver's get_cookies() —
+    which bypasses the encryption entirely since it reads via the live browser process.
+
+    If the user is not logged in, we wait up to 3 minutes for them to do so.
     """
-    # Cache check — skip Keychain entirely if we have fresh cookies
+    # Cache check — skip browser launch if we have fresh cookies
     if not refresh:
         cached = load_cookie_cache(domain)
         if cached:
             return cached
 
-    cookies_db = CHROME_PROFILES_DIR / profile / "Cookies"
-    if not cookies_db.exists():
-        sys.exit(
-            f"ERROR: Chrome Cookies DB not found at {cookies_db}\n"
-            f"Check that Chrome is installed and you've used it at least once.\n"
-            f"For a different profile, pass --profile 'Profile 1' etc."
-        )
+    try:
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+    except ImportError:
+        sys.exit("ERROR: selenium not installed. Run: pip install selenium")
 
-    key = get_chrome_encryption_key()
+    # Use a temp directory — Chrome crashes if we point to a profile that's
+    # already open in another Chrome instance.
+    tmp_profile = tempfile.mkdtemp(prefix="speakerhero_grab_")
 
-    # Copy to temp to avoid SQLite locking issues while Chrome is open
-    with tempfile.NamedTemporaryFile(suffix=".cookies.db", delete=False) as tmp:
-        tmp_path = tmp.name
+    print(f"\n🌐  Opening a fresh Chrome window for {domain}...")
+    print(f"   → A Chrome window will appear. Sign in with Google, then come back here.\n")
 
-    shutil.copy2(cookies_db, tmp_path)
+    options = Options()
+    options.add_argument(f"--user-data-dir={tmp_profile}")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
 
+    driver = None
     results = []
     try:
-        conn = sqlite3.connect(tmp_path)
-        cursor = conn.cursor()
+        driver = webdriver.Chrome(options=options)
+        driver.get(f"https://{domain}/auth/login")
 
-        cursor.execute("""
-            SELECT name, encrypted_value, path, host_key, expires_utc, is_secure, is_httponly
-            FROM cookies
-            WHERE host_key = ? OR host_key = ?
-            ORDER BY name
-        """, (domain, f".{domain}"))
+        print("   ⏳  Waiting for Google sign-in (up to 3 minutes)...")
+        print(f"   → Sign in at the browser window, then wait for this to auto-continue.\n")
 
-        for name, encrypted_value, path, host_key, expires_utc, is_secure, is_httponly in cursor.fetchall():
-            if supabase_only and not name.startswith("sb-"):
-                continue
-            value = decrypt_cookie_value(encrypted_value, key)
-            if not value:
+        deadline = time.time() + 180
+        while time.time() < deadline:
+            cookies_now = driver.get_cookies() or []
+            sb_cookies = [c for c in cookies_now if c["name"].startswith("sb-")]
+            if sb_cookies:
+                print(f"   ✅  Detected {len(sb_cookies)} Supabase session cookie(s)!")
+                break
+            time.sleep(2)
+        else:
+            print("\n⚠️  Timed out waiting for login. No sb-* cookies found.")
+            return []
+
+        # Collect all cookies for the domain
+        all_cookies = driver.get_cookies()
+        for c in all_cookies:
+            if supabase_only and not c["name"].startswith("sb-"):
                 continue
             results.append({
-                "name":     name,
-                "value":    value,
-                "domain":   host_key if host_key.startswith(".") else domain,
-                "path":     path or "/",
-                "secure":   bool(is_secure),
-                "httpOnly": bool(is_httponly),
+                "name":     c["name"],
+                "value":    c["value"],
+                "domain":   c.get("domain", domain).lstrip("."),
+                "path":     c.get("path", "/"),
+                "secure":   c.get("secure", True),
+                "httpOnly": c.get("httpOnly", False),
             })
 
-        conn.close()
-    finally:
-        os.unlink(tmp_path)
+        print(f"   ✅  Captured {len(results)} cookie(s) from live browser session.")
 
-    # Save to cache so next run skips Keychain
+    finally:
+        if driver:
+            driver.quit()
+        shutil.rmtree(tmp_profile, ignore_errors=True)
+
+    # Save to cache so next run skips browser launch
     if results:
         save_cookie_cache(domain, results)
 
